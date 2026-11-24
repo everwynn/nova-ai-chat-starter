@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: nova-ai-chat-demo
+  mvc:
+    async:
+      # SSE 长连接不设上限，实际超时由 nova.ai.sse-timeout-millis 控制（0=不超时）
+      request-timeout: -1
+
+nova:
+  ai:
+    # 两级开关：先开核心 Bean，再开端点
+    enabled: true
+    endpoint:
+      enabled: true
+
+    # 演示默认走 Mock：不访问网络、不需要 API Key
+    mock: true
+    mock-interval-millis: 40
+    model: mock-chat
+
+    system-prompt: 你是 Nova AI Chat Starter 的演示助手，回答保持简洁，不要使用 Markdown。
+    stop-mode: hard
+    worker-threads: 4
+    queue-capacity: 200
+    heartbeat-millis: 15000
+
+logging:
+  level:
+    io.github.everwynn.nova.ai: info

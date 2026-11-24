@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <!-- 2.7.x 是支持 JDK8 的最后分支 -->
+        <version>2.7.18</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>io.github.everwynn</groupId>
+    <artifactId>nova-ai-chat-parent</artifactId>
+    <version>0.1.0</version>
+    <packaging>pom</packaging>
+
+    <name>Nova AI Chat Starter</name>
+    <description>JDK8 / Spring Boot 2.7 的 SSE 对话生命周期 Starter：连接、会话、停止、心跳、有界队列</description>
+    <url>https://github.com/Everwynn/nova-ai-chat-starter</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>Everwynn</id>
+            <name>Everwynn</name>
+        </developer>
+    </developers>
+
+    <!-- Central Portal 发布校验要求：connection + url 必填 -->
+    <scm>
+        <connection>scm:git:https://github.com/Everwynn/nova-ai-chat-starter.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/Everwynn/nova-ai-chat-starter.git</developerConnection>
+        <url>https://github.com/Everwynn/nova-ai-chat-starter</url>
+    </scm>
+
+    <modules>
+        <module>nova-ai-core</module>
+        <module>nova-ai-spring-boot-starter</module>
+        <module>examples/spring-boot-demo</module>
+    </modules>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.everwynn</groupId>
+                <artifactId>nova-ai-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.everwynn</groupId>
+                <artifactId>nova-ai-chat-spring-boot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <!-- 父 POM 也要发布：否则消费者无法解析子模块的 parent 链 -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <inherited>false</inherited>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <!-- 只对 jar 模块装配：pom 构件不需要 sources / javadoc -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.6.3</version>
+                    <configuration>
+                        <!-- JDK8 的 doclint 会把中文注释里的宽松 HTML 当错误 -->
+                        <doclint>none</doclint>
+                        <encoding>UTF-8</encoding>
+                        <quiet>true</quiet>
+                        <notimestamp>true</notimestamp>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- 只在真正发布的模块里声明；示例模块不装配 -->
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.12.0</version>
+                    <configuration>
+                        <publishingServerId>central</publishingServerId>
+                        <!-- 上传后停在 validated，由人在 Portal 里点 Publish -->
+                        <autoPublish>false</autoPublish>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <!-- 发布签名：mvn deploy -Prelease；本地构建不触发，不需要 GPG key -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
