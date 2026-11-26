@@ -82,7 +82,7 @@ JDK8 / Spring Boot 2.3–2.7 的 SSE 对话生命周期 Starter。不升级 JDK�
 - 生成调度：固定线程池 + 有界队列，队列满返回「服务繁忙」。
 - 事件协议：`start` / `delta` / `end` / `stopped` / `error`，外加 `connect` / `ping`；统一 `message` 事件 + `type` 字段。
 - 模型客户端：`LlmClient` SPI，内置 OpenAI 兼容实现与 Mock 实现（`nova.ai.mock=true` 可离线演示）。
-- 自动配置：Boot 2.7 原生，`AutoConfiguration.imports` + `@AutoConfiguration`。
+- 自动配置：Boot 2.3–2.7 双注册（`AutoConfiguration.imports` + `spring.factories`），两级开关。
 - 可选端点：9 个 HTTP 端点，`nova.ai.endpoint.enabled=true` 才暴露；默认不装配、不覆盖用户已有 Bean。
 
 ## What it will NOT do
@@ -133,7 +133,7 @@ JDK8 / Spring Boot 2.3–2.7 的 SSE 对话生命周期 Starter。不升级 JDK�
 
 ## Design notes
 
-- **自动配置注册**：Boot 2.7 原生使用 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` + `@AutoConfiguration`；旧的 `spring.factories` 仍兼容，但本项目不作为主路径。
+- **自动配置注册**：同时提供 `META-INF/spring/...AutoConfiguration.imports`（2.7 读取）与 `META-INF/spring.factories`（2.3–2.6 读取）；2.7 会按类名去重，Boot 3 只读 `imports`。
 - **命名空间**：`javax.servlet`，不是 `jakarta.servlet`。
 - **命名**：`nova-ai-chat-spring-boot-starter` 遵循第三方 Starter 的 `*-spring-boot-starter` 约定；`spring-boot-starter-*` 前缀留给官方 Starter。
 - **SSE 实现**：Spring MVC `SseEmitter`，不引入 WebFlux。
@@ -170,7 +170,7 @@ nova-ai-core                       (SSE lifecycle, session, scheduler, SPI)
 
 | 内容 | 状态 |
 |---|---|
-| README / 文档 | 已写；README 含完整接入步骤，`docs/` 扩展文档未纳入版本控制 |
+| README / 文档 | 已写；README 含完整接入步骤，`docs/` 扩展文档已补齐（未纳入版本控制） |
 | `nova-ai-core` | 已实现：模型、SPI、SSE 抽象、会话存储、调度、停止收尾 |
 | `nova-ai-spring-boot-starter` | 已实现：properties、自动配置、9 个端点；发布 artifact 名为 `nova-ai-chat-spring-boot-starter` |
 | examples | `spring-boot-demo` 已实现并可运行；`plain-html`、`vue-chat` 计划中 |
@@ -196,9 +196,9 @@ nova-ai-core                       (SSE lifecycle, session, scheduler, SPI)
 - [ ] 其余示例：plain-html、vue-chat
 - [x] Maven Central 发布（0.1.0，2026-11-26）
 - [x] Boot 2.3–2.6 兼容（`spring.factories`，0.1.1）
-- [ ] 兼容性矩阵
-- [ ] 生产检查清单
-- [ ] Boot 3 迁移指南
+- [x] 兼容性矩阵（本地 `docs/compatibility.md`）
+- [x] 生产检查清单（本地 `docs/production-checklist.md`）
+- [x] Boot 3 迁移指南（本地 `docs/migration-boot3.md`，规划性文档）
 
 ---
 
@@ -336,8 +336,11 @@ mvn spring-boot:run
 - [nova-ai-spring-boot-starter/README.md](nova-ai-spring-boot-starter/README.md)：Starter 配置与端点。
 - [examples/README.md](examples/README.md)：示例运行方式。
 - `docs/quickstart.md`：完整配置参考、事件协议、Redis 存储与自定义事件出口（本地扩展文档，当前未纳入版本控制）。
+- `docs/configuration.md`：全部配置项与失败表现（本地）。
+- `docs/compatibility.md`：版本矩阵、双注册机制、404 排查（本地）。
+- `docs/production-checklist.md`：上线前检查清单（本地）。
+- `docs/migration-boot3.md`：Boot 3 迁移规划（本地）。
 - `docs/release-process.md`：GitHub 建仓、打 tag、Maven Central 发布全流程（同上）。
-- Configuration、Compatibility、Production Checklist、Boot 3 Migration：计划中。
 
 ---
 

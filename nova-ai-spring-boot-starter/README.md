@@ -1,10 +1,10 @@
 # nova-ai-chat-spring-boot-starter
 
-> 状态：0.1.0 已实现，未发布到 Maven Central。
+> 状态：0.1.0 已发布到 Maven Central；0.1.1 已完成、待发布（支持 Spring Boot 2.3–2.7）。
 
 ## 职责
 
-- 为 Spring Boot 2.7 提供自动配置（`@AutoConfiguration` + `AutoConfiguration.imports`）。
+- 为 Spring Boot 2.3–2.7 提供自动配置（`@Configuration` + `@AutoConfigureAfter`；`AutoConfiguration.imports` 与 `spring.factories` 双注册）。
 - 注册 `nova.ai.*` 配置项（`NovaAiProperties`）。
 - 按需注册 `/api/ai/chat/*` 端点（默认关闭）。
 - 把 core 的 SPI 与 Spring Bean 连接起来，用户已有 Bean 不覆盖（`@ConditionalOnMissingBean`）。
@@ -58,4 +58,4 @@ GET    /api/ai/chat/online
 - `nova.ai.enabled=true` 装配核心 Bean，但端点仍关闭；
 - 再设 `nova.ai.endpoint.enabled=true` 才注册控制器。
 
-示例见 [examples/spring-boot-demo](../examples/spring-boot-demo)。
+示例见 [examples/spring-boot-demo](../examples/spring-boot-demo)；Boot 2.3.7 兼容验证见 [spring-boot-demo-237](../examples/spring-boot-demo-237)。
