@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: nova-ai-chat-demo-237
+  mvc:
+    async:
+      # 与 2.7 示例一致：SSE 长连接不设上限
+      request-timeout: -1
+
+nova:
+  ai:
+    enabled: true
+    endpoint:
+      enabled: true
+
+    mock: true
+    mock-interval-millis: 40
+    model: mock-chat
+
+    system-prompt: 你是 Spring Boot 2.3.7 兼容性验证助手，回答保持简洁，不要使用 Markdown。
+    stop-mode: hard
+    worker-threads: 4
+    queue-capacity: 200
+    heartbeat-millis: 15000
+
+logging:
+  level:
+    io.github.everwynn.nova.ai: info

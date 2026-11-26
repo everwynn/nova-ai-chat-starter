@@ -1,10 +1,11 @@
 # Nova AI Chat Starter
 
-JDK8 / Spring Boot 2.7 的 SSE 对话生命周期 Starter。不升级 JDK，不引入完整 AI 框架，把连接、会话、停止、心跳和有界队列管好。
+JDK8 / Spring Boot 2.3–2.7 的 SSE 对话生命周期 Starter。不升级 JDK，不引入完整 AI 框架，把连接、会话、停止、心跳和有界队列管好。
 
-> **Status: 0.1.0，可本地构建运行，未发布到 Maven Central。**
-> `nova-ai-core`、`nova-ai-spring-boot-starter`、`examples/spring-boot-demo` 已实现；17 个自动化测试通过；
-> SSE 流式、停止生成、刷新回显已在浏览器实测。API 仍可能调整，暂不建议直接用于生产。
+> **Status: 0.1.0 已发布到 Maven Central；0.1.1 已完成、待发布。**
+> `io.github.everwynn:nova-ai-chat-spring-boot-starter:0.1.0` 连同 parent 与 core 可直接从中央仓库拉取；
+> 0.1.1 起支持 Spring Boot 2.3.x–2.7.x（新增 `spring.factories` 注册），0.1.0 仅支持 2.7.x。
+> 17 个自动化测试 + 1 个 2.3.7 冒烟测试通过；SSE 流式、停止生成、刷新回显已在浏览器实测。API 仍可能调整，暂不建议直接用于生产。
 > 如果这个方向对你有用，请通过 Issue 或 Discussions 告诉我你的场景。
 
 **一句话定位：**
@@ -115,11 +116,18 @@ JDK8 / Spring Boot 2.7 的 SSE 对话生命周期 Starter。不升级 JDK，不�
 | 项目 | 支持范围 |
 |---|---|
 | JDK | 8 |
-| Spring Boot | 2.7.x |
+| Spring Boot | 2.3.x – 2.7.x（0.1.1 起）；0.1.0 仅 2.7.x |
 | Servlet | `javax.servlet` 3.1+ |
 | Web 栈 | Spring MVC（不要求 WebFlux） |
 | 模型服务 | OpenAI 兼容（OpenAI / DeepSeek / 通义兼容 / vLLM / Ollama） |
 | 构建 | Maven |
+
+不支持的组合：
+
+- **Spring Boot 2.3.x – 2.6.x**：需要 0.1.1 及以上（走 `spring.factories`）。0.1.0 在这些版本下**启动正常、无任何报错，但 `/api/ai/chat/*` 全部 404**。
+- **Spring Boot 2.2 及以下**：未适配。
+- **Spring Boot 3.x**：`javax.servlet` → `jakarta.servlet`，需另发适配版。
+- **WebFlux**、**JDK 7 及以下**。
 
 ---
 
@@ -162,14 +170,15 @@ nova-ai-core                       (SSE lifecycle, session, scheduler, SPI)
 
 | 内容 | 状态 |
 |---|---|
-| README / 文档 | 已写，随代码同步 |
+| README / 文档 | 已写；README 含完整接入步骤，`docs/` 扩展文档未纳入版本控制 |
 | `nova-ai-core` | 已实现：模型、SPI、SSE 抽象、会话存储、调度、停止收尾 |
 | `nova-ai-spring-boot-starter` | 已实现：properties、自动配置、9 个端点；发布 artifact 名为 `nova-ai-chat-spring-boot-starter` |
 | examples | `spring-boot-demo` 已实现并可运行；`plain-html`、`vue-chat` 计划中 |
-| 自动化测试 | 17 个通过（core 12 + starter 5） |
+| 自动化测试 | 17 个通过（core 12 + starter 5）；另有 2.3.7 冒烟测试 1 个 |
+| Boot 兼容验证 | 2.3.7 与 2.7.18 均跑通（示例在 `examples/`） |
 | 浏览器实测 | 流式 / 停止（22ms 收尾）/ 刷新回显，通过 |
 | LICENSE / NOTICE | 已添加（Apache-2.0） |
-| Maven 发布 | 未发布（0.1.0，本地 install） |
+| Maven 发布 | 已发布 0.1.0 到 Maven Central（parent + core + starter） |
 | CI | 未配置 |
 
 实现由参考工程 `nova-chat-single`（53 个测试、9 个端点、零第三方 SDK）抽取而来，在独立仓库中重写并补充了停止语义修复。
@@ -185,7 +194,8 @@ nova-ai-core                       (SSE lifecycle, session, scheduler, SPI)
 - [x] 写 Starter 自动配置与 properties
 - [x] `spring-boot-demo` 示例
 - [ ] 其余示例：plain-html、vue-chat
-- [ ] Maven Central 发布
+- [x] Maven Central 发布（0.1.0，2026-11-26）
+- [x] Boot 2.3–2.6 兼容（`spring.factories`，0.1.1）
 - [ ] 兼容性矩阵
 - [ ] 生产检查清单
 - [ ] Boot 3 迁移指南
@@ -194,21 +204,13 @@ nova-ai-core                       (SSE lifecycle, session, scheduler, SPI)
 
 ## Quick start
 
-未发布到 Maven Central，先在本地构建：
+`0.1.0` 已发布到 Maven Central，业务项目直接引依赖即可，不需要先本地 `install`。
 
-```bash
-# 仓库根目录：跑测试 + 安装到本地仓库
-mvn test
-mvn -DskipTests install
+> **前置条件：JDK 8 + Spring Boot 2.3.x–2.7.x（0.1.1 起；0.1.0 仅支持 2.7.x）。** 0.1.0 在 2.6 及以下不会加载自动配置（`AutoConfiguration.imports` 机制 2.7 才引入），端点会静默 404；Spring Boot 3.x 因 `jakarta.servlet` 不兼容。
 
-# 启动示例（默认 mock 模式，不需要 API Key）
-cd examples/spring-boot-demo
-mvn spring-boot:run
-```
+### 1. 添加依赖
 
-打开 <http://localhost:8080/chat.html>。
-
-在自己项目中使用（本地 install 后）：
+Maven：
 
 ```xml
 <dependency>
@@ -218,37 +220,123 @@ mvn spring-boot:run
 </dependency>
 ```
 
-```properties
-nova.ai.enabled=true
-nova.ai.base-url=https://api.deepseek.com
-nova.ai.api-key=${LLM_API_KEY}
-nova.ai.model=deepseek-chat
-nova.ai.session-store=memory
-nova.ai.stop-mode=hard
-nova.ai.endpoint.enabled=true
+Gradle：
+
+```groovy
+implementation 'io.github.everwynn:nova-ai-chat-spring-boot-starter:0.1.0'
 ```
 
-主要端点：
+`nova-ai-core` 作为传递依赖自动引入；父 POM `nova-ai-chat-parent` 由 Maven 从中央仓库解析，业务项目**不需要**继承它。
 
-```text
-GET  /api/ai/chat/connect/{clientId}
-POST /api/ai/chat/send
-POST /api/ai/chat/stop/{sessionId}
-GET  /api/ai/chat/history/{sessionId}
-GET  /api/ai/chat/online
+### 2. 配置
+
+两个开关默认都是 `false`，必须同时打开：
+
+```yaml
+spring:
+  mvc:
+    async:
+      request-timeout: -1        # 防止容器层掐断 SSE 长连接
+
+nova:
+  ai:
+    enabled: true                # 装配核心 Bean（默认 false）
+    endpoint:
+      enabled: true              # 暴露 /api/ai/chat/*（默认 false）
+    base-url: https://api.deepseek.com
+    api-key: ${LLM_API_KEY}      # 用环境变量注入，不要提交到仓库
+    model: deepseek-chat
+    stop-mode: hard              # hard=尽量断开上游；soft=不打断上游
+    worker-threads: 4
+    queue-capacity: 200
+    heartbeat-millis: 15000
 ```
 
-YAML 支持、完整 9 个端点、全部配置项见 [docs/quickstart.md](docs/quickstart.md)。
+不接模型、只想先跑通：加 `nova.ai.mock=true`，逐字输出、不访问网络。
+
+### 3. 启动自检
+
+```bash
+curl http://localhost:8080/api/ai/chat/online
+# {"code":0,"msg":"success","data":0}
+```
+
+### 4. 前端最小接入
+
+```javascript
+// 1) 先建立 SSE 连接
+const es = new EventSource('/api/ai/chat/connect/c-1');
+let closed = false;
+es.onmessage = (e) => {
+  const evt = JSON.parse(e.data);
+  if (evt.type === 'delta' && !closed) append(evt.content);
+  if (evt.type === 'end' || evt.type === 'stopped') { closed = true; es.close(); }
+  if (evt.type === 'error') { closed = true; es.close(); }
+};
+
+// 2) 再发送消息
+fetch('/api/ai/chat/send', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ clientId: 'c-1', sessionId: 's-1', message: '你好' })
+});
+```
+
+`stopped` / `end` 之后仍可能滑入一个迟到的 `delta`，前端必须用类似的 `closed` 标志忽略它。
+
+### 端点
+
+`nova.ai.endpoint.enabled=true` 时注册，前缀 `/api/ai/chat`：
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| `GET` | `/connect/{clientId}` | 建立 SSE 连接，立即收到 `connect` 事件 |
+| `POST` | `/send` | 发送消息并触发流式生成 |
+| `POST` | `/stop/{sessionId}` | 停止该会话当前生成 |
+| `POST` | `/session/{sessionId}/clear` | 清空会话历史 |
+| `GET` | `/history/{sessionId}` | 查询会话历史 |
+| `GET` | `/sessions` | 列出会话 |
+| `DELETE` | `/session/{sessionId}` | 删除会话 |
+| `POST` | `/close/{clientId}` | 主动关闭 SSE 连接 |
+| `GET` | `/online` | 在线连接数 |
+
+约束：`clientId` / `sessionId` 匹配 `[A-Za-z0-9_-]{1,64}`；`message` 非空且不超过 4000 字符；`sessionId` 为空时默认取 `clientId`。响应统一为 `Result`，`code=0` 成功，`code=1` 表示业务失败（重复发送、队列已满、参数不合法）。
+
+### 接入前必看
+
+| 事项 | 说明 |
+|---|---|
+| Spring Boot 2.3–2.6 | 用 **0.1.1+**（走 `spring.factories`）；0.1.0 在这些版本下启动正常但端点全部 404（无报错） |
+| Spring Boot 3.x | **不支持**：`javax.servlet` → `jakarta.servlet`，需另发适配版 |
+| Web 栈 | 仅 Spring MVC；WebFlux 项目不适用 |
+| 鉴权 | 端点不带鉴权；`EventSource` 不能自定义 Header，需用 Cookie 或网关兜住 |
+| 多实例 | 默认内存会话，不跨实例共享；实现 `ChatSessionStore` 换 Redis / DB |
+| 反向代理 | Nginx 需 `proxy_buffering off`，`proxy_read_timeout` 大于心跳间隔 |
+| 线程池 | 队列满时 `send` 返回「服务繁忙」，按并发调 `worker-threads` / `queue-capacity` |
+| 国内镜像 | 镜像同步 Central 有延迟，拉不到时可临时指定 `https://repo1.maven.org/maven2` |
+
+### 本地运行示例
+
+```bash
+mvn test
+mvn -DskipTests install
+cd examples/spring-boot-demo
+mvn spring-boot:run
+```
+
+打开 <http://localhost:8080/chat.html>（默认 mock 模式，不需要 API Key）。
+
+完整配置项、事件协议、Redis 存储与自定义事件出口见 `docs/quickstart.md`（本地扩展文档，当前未纳入版本控制）。
 
 ---
 
 ## Documentation
 
-- [docs/README.md](docs/README.md)：文档索引与状态。
-- [docs/quickstart.md](docs/quickstart.md)：接入说明、配置参考、端点与事件协议。
 - [nova-ai-core/README.md](nova-ai-core/README.md)：核心模块结构与设计。
 - [nova-ai-spring-boot-starter/README.md](nova-ai-spring-boot-starter/README.md)：Starter 配置与端点。
 - [examples/README.md](examples/README.md)：示例运行方式。
+- `docs/quickstart.md`：完整配置参考、事件协议、Redis 存储与自定义事件出口（本地扩展文档，当前未纳入版本控制）。
+- `docs/release-process.md`：GitHub 建仓、打 tag、Maven Central 发布全流程（同上）。
 - Configuration、Compatibility、Production Checklist、Boot 3 Migration：计划中。
 
 ---

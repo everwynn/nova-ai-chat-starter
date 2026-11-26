@@ -14,11 +14,11 @@
 
     <groupId>io.github.everwynn</groupId>
     <artifactId>nova-ai-chat-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <packaging>pom</packaging>
 
     <name>Nova AI Chat Starter</name>
-    <description>JDK8 / Spring Boot 2.7 的 SSE 对话生命周期 Starter：连接、会话、停止、心跳、有界队列</description>
+    <description>JDK8 / Spring Boot 2.3–2.7 的 SSE 对话生命周期 Starter：连接、会话、停止、心跳、有界队列</description>
     <url>https://github.com/Everwynn/nova-ai-chat-starter</url>
 
     <licenses>

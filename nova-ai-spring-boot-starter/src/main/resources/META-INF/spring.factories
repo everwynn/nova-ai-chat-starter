@@ -1,0 +1,4 @@
+# Spring Boot 2.3–2.6 只读取这个文件；2.7 同时读取 imports 与本文件，候选类会去重。
+# 保留到 3.x 不支持为止：Boot 3.0 起不再从 spring.factories 读取自动配置。
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.everwynn.nova.ai.starter.NovaAiAutoConfiguration

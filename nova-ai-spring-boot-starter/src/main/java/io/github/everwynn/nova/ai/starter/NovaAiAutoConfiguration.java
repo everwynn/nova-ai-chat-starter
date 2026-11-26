@@ -10,7 +10,7 @@ import io.github.everwynn.nova.ai.core.session.ChatSessionStore;
 import io.github.everwynn.nova.ai.core.session.InMemoryChatSessionStore;
 import io.github.everwynn.nova.ai.starter.web.NovaAiChatController;
 import io.github.everwynn.nova.ai.starter.web.SseChatGateway;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,6 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
@@ -32,8 +33,12 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  * （需 {@code @Primary}）不会被覆盖。
  *
  * <p>非 Servlet Web 应用或缺少 Jackson / Spring MVC 时静默退场，不影响应用启动。
+ *
+ * <p>兼容 Spring Boot 2.3–2.7：除 {@code AutoConfiguration.imports} 外，
+ * 同时在 {@code META-INF/spring.factories} 注册，供不识别新文件的旧版本加载。
  */
-@AutoConfiguration(after = JacksonAutoConfiguration.class)
+@Configuration(proxyBeanMethods = false)
+@AutoConfigureAfter(JacksonAutoConfiguration.class)
 @ConditionalOnClass({SseEmitter.class, ObjectMapper.class})
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnProperty(prefix = "nova.ai", name = "enabled", havingValue = "true")

@@ -7,13 +7,13 @@
     <parent>
         <groupId>io.github.everwynn</groupId>
         <artifactId>nova-ai-chat-parent</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
     </parent>
 
     <artifactId>nova-ai-chat-spring-boot-starter</artifactId>
     <packaging>jar</packaging>
     <name>Nova AI Chat Spring Boot Starter</name>
-    <description>Spring Boot 2.7 自动配置：nova.ai.* 配置、SSE 端点与连接网关</description>
+    <description>Spring Boot 2.3–2.7 自动配置：nova.ai.* 配置、SSE 端点与连接网关</description>
 
     <dependencies>
         <dependency>

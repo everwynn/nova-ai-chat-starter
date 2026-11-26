@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nova AI Chat Starter · Demo</title>
+<style>
+  :root {
+    --bg: #eef2f7;
+    --card: #ffffff;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --brand: #2563eb;
+    --brand-soft: #eff6ff;
+    --danger: #dc2626;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #dbeafe 0%, var(--bg) 55%, #e8eef6 100%);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 920px;
+    height: calc(100vh - 48px);
+    min-height: 520px;
+    background: var(--card);
+    border: 1px solid rgba(148, 163, 184, .25);
+    border-radius: 22px;
+    box-shadow: 0 24px 60px -24px rgba(15, 23, 42, .25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255, 255, 255, .9);
+  }
+
+  .logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+    font-weight: 700;
+    font-size: 17px;
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+
+  .title-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+  .title {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: .2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    background: #f1f5f9;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    user-select: none;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    transition: background .2s ease, box-shadow .2s ease;
+  }
+
+  .status.online .dot {
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, .16);
+  }
+
+  .status.online .status-text { color: #15803d; }
+
+  .ghost-btn {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: #334155;
+    font-size: 12.5px;
+    padding: 7px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+
+  .ghost-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+  .ghost-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ---------- 消息区 ---------- */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 20px 10px;
+    scroll-behavior: smooth;
+  }
+
+  .welcome {
+    max-width: 560px;
+    margin: 8vh auto 0;
+    text-align: center;
+    animation: rise .45s ease both;
+  }
+
+  .welcome h1 {
+    font-size: 22px;
+    margin: 0 0 10px;
+    letter-spacing: -.2px;
+  }
+
+  .welcome p {
+    margin: 0 auto 22px;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.7;
+    max-width: 460px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .chip {
+    border: 1px solid var(--line);
+    background: #fbfdff;
+    color: #334155;
+    font-size: 12.5px;
+    padding: 8px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease, transform .15s ease;
+  }
+
+  .chip:hover {
+    border-color: #bfdbfe;
+    background: var(--brand-soft);
+    transform: translateY(-1px);
+  }
+
+  .row {
+    display: flex;
+    margin-bottom: 18px;
+    animation: rise .22s ease both;
+  }
+
+  .row.user { justify-content: flex-end; }
+  .row.assistant { justify-content: flex-start; }
+
+  .bubble {
+    max-width: 78%;
+    border-radius: 15px;
+    padding: 11px 14px;
+    font-size: 14px;
+    line-height: 1.72;
+  }
+
+  .row.user .bubble {
+    background: var(--brand);
+    color: #fff;
+    border-bottom-right-radius: 5px;
+    box-shadow: 0 8px 18px -12px rgba(37, 99, 235, .8);
+  }
+
+  .row.assistant .bubble {
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 5px;
+  }
+
+  .bubble-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .bubble-text:empty { display: none; }
+
+  .bubble-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .bubble-note:empty { display: none; }
+  .bubble-note.error { color: var(--danger); }
+
+  .system {
+    margin: 6px auto 18px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ---------- 输入区 ---------- */
+  .composer {
+    border-top: 1px solid var(--line);
+    padding: 14px 18px 16px;
+    background: #fff;
+  }
+
+  .input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 10px 10px 14px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+
+  .input-box:focus-within {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, .12);
+  }
+
+  textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink);
+    background: transparent;
+    max-height: 132px;
+    padding: 2px 0;
+  }
+
+  textarea::placeholder { color: #94a3b8; }
+
+  .send-btn {
+    flex: none;
+    min-width: 76px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background: var(--brand);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s ease, opacity .15s ease;
+  }
+
+  .send-btn:hover { background: #1d4ed8; }
+  .send-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .send-btn.stopping { background: #475569; }
+
+  .hint {
+    margin-top: 9px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11.5px;
+    color: #94a3b8;
+  }
+
+  .session-label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 46%;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 0; }
+    .app { height: 100vh; border-radius: 0; border: none; }
+    .bubble { max-width: 88%; }
+    .subtitle { display: none; }
+    .topbar { padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="logo">N</div>
+    <div class="title-wrap">
+      <div class="title">
+        Nova AI Chat
+        <span class="badge">Starter 0.1.0</span>
+      </div>
+      <div class="subtitle">Bring your own model client; we handle the SSE chat lifecycle.</div>
+    </div>
+    <div class="topbar-right">
+      <div id="status" class="status offline">
+        <span class="dot"></span>
+        <span class="status-text">连接中…</span>
+      </div>
+      <button id="new-session" class="ghost-btn" type="button">新会话</button>
+      <button id="clear-session" class="ghost-btn" type="button">清空</button>
+    </div>
+  </header>
+
+  <main id="messages" class="messages">
+    <section id="welcome" class="welcome">
+      <h1>一条 SSE 连接，把对话跑稳</h1>
+      <p>
+        发送一条消息，观察逐字流式输出；生成过程中点击「停止」，前端会立即结束等待并标注已停止。
+        刷新页面后，会话历史会从服务端回显。
+      </p>
+      <div class="chips">
+        <button class="chip" type="button" data-text="用三句话介绍这个 Starter 解决什么问题。">这个 Starter 解决什么问题？</button>
+        <button class="chip" type="button" data-text="为什么 JDK8 项目不直接上 Spring AI？">为什么不直接上 Spring AI？</button>
+        <button class="chip" type="button" data-text="写一段两百字左右的产品介绍，纯文本，不要 Markdown。">写一段产品介绍</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="composer">
+    <div class="input-box">
+      <textarea id="input" rows="1" placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
+      <button id="send" class="send-btn" type="button">发送</button>
+    </div>
+    <div class="hint">
+      <span class="session-label" id="session-label"></span>
+      <span>Mock 模式 · 逐字输出 40ms/字</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var API = '/api/ai/chat';
+  var STOP_FALLBACK_MS = 2000;
+
+  function randomId() {
+    return Math.random().toString(36).slice(2, 10);
+  }
+
+  var storage = window.sessionStorage;
+  var clientId = storage.getItem('nova.clientId');
+  var sessionId = storage.getItem('nova.sessionId');
+  if (!clientId) {
+    clientId = 'demo-' + randomId();
+    storage.setItem('nova.clientId', clientId);
+  }
+  if (!sessionId) {
+    sessionId = 's-' + randomId();
+    storage.setItem('nova.sessionId', sessionId);
+  }
+
+  var els = {
+    messages: document.getElementById('messages'),
+    welcome: document.getElementById('welcome'),
+    input: document.getElementById('input'),
+    send: document.getElementById('send'),
+    status: document.getElementById('status'),
+    statusText: document.querySelector('#status .status-text'),
+    newSession: document.getElementById('new-session'),
+    clearSession: document.getElementById('clear-session'),
+    sessionLabel: document.getElementById('session-label')
+  };
+
+  var generating = false;
+  var stopRequested = false;
+  var streamClosed = true;
+  var active = null;
+  var fallbackTimer = null;
+  var historyLoaded = false;
+  var eventSource = null;
+
+  els.sessionLabel.textContent = '会话 ' + sessionId;
+
+  /* ---------- SSE ---------- */
+
+  function connect() {
+    eventSource = new EventSource(API + '/connect/' + encodeURIComponent(clientId));
+    eventSource.onopen = function () { setOnline(true); };
+    eventSource.onerror = function () { setOnline(false); };
+    eventSource.onmessage = function (event) {
+      var data;
+      try {
+        data = JSON.parse(event.data);
+      } catch (e) {
+        return;
+      }
+      handleEvent(data);
+    };
+  }
+
+  function handleEvent(event) {
+    switch (event.type) {
+      case 'connect':
+        setOnline(true);
+        loadHistoryOnce();
+        break;
+      case 'ping':
+        break;
+      case 'start':
+        beginAnswer();
+        break;
+      case 'delta':
+        appendDelta(event.content);
+        break;
+      case 'end':
+        finalizeAnswer(event.content, false);
+        break;
+      case 'stopped':
+        finalizeAnswer(event.content, true);
+        break;
+      case 'error':
+        failAnswer(event.content);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function setOnline(online) {
+    els.status.classList.toggle('online', online);
+    els.status.classList.toggle('offline', !online);
+    els.statusText.textContent = online ? '已连接' : '连接中…';
+  }
+
+  /* ---------- 消息渲染 ---------- */
+
+  function addMessage(role, content) {
+    els.welcome.hidden = true;
+    var row = document.createElement('div');
+    row.className = 'row ' + role;
+
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    var text = document.createElement('div');
+    text.className = 'bubble-text';
+    text.textContent = content || '';
+
+    var note = document.createElement('div');
+    note.className = 'bubble-note';
+
+    bubble.appendChild(text);
+    bubble.appendChild(note);
+    row.appendChild(bubble);
+    els.messages.appendChild(row);
+    scrollToBottom(true);
+    return { row: row, textEl: text, noteEl: note };
+  }
+
+  function addSystem(content) {
+    els.welcome.hidden = true;
+    var el = document.createElement('div');
+    el.className = 'system';
+    el.textContent = content;
+    els.messages.appendChild(el);
+    scrollToBottom(true);
+  }
+
+  function beginAnswer() {
+    if (active) {
+      return;
+    }
+    active = addMessage('assistant', '');
+    active.noteEl.textContent = '正在生成…';
+    streamClosed = false;
+  }
+
+  function appendDelta(content) {
+    if (streamClosed || !active || !content) {
+      return;
+    }
+    if (active.noteEl.textContent === '正在生成…') {
+      active.noteEl.textContent = '';
+    }
+    active.textEl.textContent += content;
+    scrollToBottom(false);
+  }
+
+  function finalizeAnswer(content, stopped) {
+    streamClosed = true;
+    if (!active) {
+      if (stopped) {
+        addSystem('已停止生成');
+      }
+      finishGeneration();
+      return;
+    }
+    if (typeof content === 'string') {
+      active.textEl.textContent = content;
+    }
+    active.noteEl.classList.remove('error');
+    if (stopped) {
+      if (active.textEl.textContent) {
+        active.noteEl.textContent = '（已停止）';
+      } else {
+        active.row.remove();
+        active = null;
+        addSystem('已停止生成');
+      }
+    } else {
+      active.noteEl.textContent = '';
+    }
+    finishGeneration();
+  }
+
+  function failAnswer(message) {
+    streamClosed = true;
+    if (active) {
+      active.noteEl.textContent = '生成失败：' + (message || '未知错误');
+      active.noteEl.classList.add('error');
+    } else {
+      addSystem('生成失败：' + (message || '未知错误'));
+    }
+    finishGeneration();
+  }
+
+  function scrollToBottom(force) {
+    var el = els.messages;
+    var nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    if (force || nearBottom) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+
+  /* ---------- 会话状态 ---------- */
+
+  function beginGeneration() {
+    generating = true;
+    stopRequested = false;
+    streamClosed = false;
+    els.input.disabled = true;
+    els.send.disabled = false;
+    els.send.textContent = '停止';
+    els.send.classList.add('stopping');
+  }
+
+  function finishGeneration() {
+    generating = false;
+    stopRequested = false;
+    clearFallback();
+    active = null;
+    els.input.disabled = false;
+    els.send.disabled = false;
+    els.send.textContent = '发送';
+    els.send.classList.remove('stopping');
+    els.input.focus();
+  }
+
+  function clearFallback() {
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = null;
+    }
+  }
+
+  function armFallback() {
+    clearFallback();
+    fallbackTimer = setTimeout(function () {
+      fallbackTimer = null;
+      if (!generating) {
+        return;
+      }
+      streamClosed = true;
+      if (active) {
+        if (active.textEl.textContent) {
+          active.noteEl.textContent = '（已停止）';
+        } else {
+          active.row.remove();
+          active = null;
+          addSystem('已停止生成');
+        }
+      } else {
+        addSystem('已停止生成');
+      }
+      finishGeneration();
+    }, STOP_FALLBACK_MS);
+  }
+
+  /* ---------- 发送 / 停止 ---------- */
+
+  function sendMessage() {
+    if (generating) {
+      return;
+    }
+    var text = els.input.value.trim();
+    if (!text) {
+      return;
+    }
+    addMessage('user', text);
+    els.input.value = '';
+    autoGrow();
+    beginGeneration();
+
+    fetch(API + '/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId: clientId, sessionId: sessionId, message: text })
+    }).then(function (response) {
+      return response.json();
+    }).then(function (result) {
+      if (!result || result.code !== 0) {
+        finishGeneration();
+        addSystem((result && result.msg) || '发送失败');
+      }
+    }).catch(function (error) {
+      finishGeneration();
+      addSystem('发送失败：' + error.message);
+    });
+  }
+
+  function requestStop() {
+    if (!generating || stopRequested) {
+      return;
+    }
+    stopRequested = true;
+    els.send.disabled = true;
+    els.send.textContent = '停止中…';
+    armFallback();
+
+    fetch(API + '/stop/' + encodeURIComponent(sessionId), { method: 'POST' })
+      .then(function (response) { return response.json(); })
+      .then(function (result) {
+        if (!result || result.code !== 0) {
+          // 生成可能刚好自然结束，交给 SSE 的 end 事件收尾
+          clearFallback();
+          stopRequested = false;
+          els.send.disabled = false;
+          els.send.textContent = generating ? '停止' : '发送';
+        }
+      })
+      .catch(function () {
+        clearFallback();
+        stopRequested = false;
+        els.send.disabled = false;
+        els.send.textContent = generating ? '停止' : '发送';
+      });
+  }
+
+  /* ---------- 历史 / 会话操作 ---------- */
+
+  function loadHistoryOnce() {
+    if (historyLoaded) {
+      return;
+    }
+    historyLoaded = true;
+    fetch(API + '/history/' + encodeURIComponent(sessionId))
+      .then(function (response) { return response.json(); })
+      .then(function (result) {
+        if (!result || result.code !== 0) {
+          return;
+        }
+        var list = result.data || [];
+        if (!list.length) {
+          return;
+        }
+        list.forEach(function (message) {
+          if (message.role === 'user' || message.role === 'assistant') {
+            addMessage(message.role, message.content);
+          }
+        });
+        scrollToBottom(true);
+      })
+      .catch(function () { /* 静默：历史加载失败不影响新对话 */ });
+  }
+
+  function resetMessages() {
+    Array.prototype.forEach.call(els.messages.querySelectorAll('.row, .system'), function (el) {
+      el.remove();
+    });
+    els.welcome.hidden = false;
+    active = null;
+    streamClosed = true;
+  }
+
+  function newSession() {
+    if (generating) {
+      return;
+    }
+    sessionId = 's-' + randomId();
+    storage.setItem('nova.sessionId', sessionId);
+    els.sessionLabel.textContent = '会话 ' + sessionId;
+    historyLoaded = true;
+    resetMessages();
+  }
+
+  function clearSession() {
+    if (generating) {
+      return;
+    }
+    fetch(API + '/session/' + encodeURIComponent(sessionId) + '/clear', { method: 'POST' })
+      .then(function (response) { return response.json(); })
+      .then(function (result) {
+        if (result && result.code === 0) {
+          resetMessages();
+          historyLoaded = true;
+        }
+      })
+      .catch(function () { /* 忽略 */ });
+  }
+
+  /* ---------- 输入交互 ---------- */
+
+  function autoGrow() {
+    els.input.style.height = 'auto';
+    els.input.style.height = Math.min(els.input.scrollHeight, 132) + 'px';
+  }
+
+  els.send.addEventListener('click', function () {
+    if (generating) {
+      requestStop();
+    } else {
+      sendMessage();
+    }
+  });
+
+  els.input.addEventListener('input', autoGrow);
+  els.input.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  els.newSession.addEventListener('click', newSession);
+  els.clearSession.addEventListener('click', clearSession);
+
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (chip) {
+    chip.addEventListener('click', function () {
+      els.input.value = chip.getAttribute('data-text') || '';
+      autoGrow();
+      els.input.focus();
+    });
+  });
+
+  /* ---------- 启动 ---------- */
+
+  autoGrow();
+  connect();
+  setInterval(function () {
+    if (!eventSource) {
+      return;
+    }
+    // EventSource 自带重连；这里只同步 UI 状态，避免 READYSTATE 丢失
+    setOnline(eventSource.readyState === EventSource.OPEN);
+  }, 3000);
+})();
+</script>
+</body>
+</html>
